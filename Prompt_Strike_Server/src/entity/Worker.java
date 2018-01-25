@@ -23,9 +23,9 @@ public class Worker extends Unit{
 	private final int GATHERTIME = 1000;
 	
 	public Worker (String name, float posX, float posY, float rotation) {
-		super(name, posX * 64, posY * 64, rotation);
+		super(name, posX, posY, rotation);
 		
-		sprite = new Part(posX * 64, posY * 64, rotation);
+		sprite = new Part(posX, posY, rotation);
 		
 		sprite.SPEEDMOVE = 1;
 		sprite.SPEEDROTATE = 1;

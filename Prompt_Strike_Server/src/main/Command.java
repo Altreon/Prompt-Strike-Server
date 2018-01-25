@@ -5,14 +5,9 @@ import java.util.ArrayList;
 public class Command {
 	
 	//garder?
-	private static int player = 0; 
+	private static int player = 0;
 
-	
-	public static void loadWord () {
-		//word.add
-	}
-
-	public static boolean processCommand(String commandText) {
+	public boolean processCommand(String commandText) {
 		boolean commandCorrect = false;
 		
 		ArrayList<String> words = new ArrayList<String>();
@@ -27,12 +22,7 @@ public class Command {
 		}else if (Server.getPlayers().get(player).isStructure(firstWord)) {
 			commandCorrect = structCommand(firstWord, words);
 		}
-		
-		if (commandCorrect) {
-			return true;
-		}else{
-			return false;
-		}
+		return commandCorrect;
 			
 	}
 

@@ -11,6 +11,8 @@ public abstract class Entity {
 	
 	public Entity(String name, float posX, float posY) {
 		this.name = name;
+		
+		pos = new float[2];
 		pos[0] = posX;
 		pos[1] = posY;
 	}

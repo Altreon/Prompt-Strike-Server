@@ -15,6 +15,7 @@ public class Part{
 	protected float rotateDirection;
 	
 	public Part(float posX, float posY, float rotation) {
+		pos = new float[2];
 		pos[0] = posX;
 		pos[1] = posY;
 		this.rotation = rotation;

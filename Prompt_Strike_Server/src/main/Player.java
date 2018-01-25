@@ -27,11 +27,6 @@ public class Player {
 		structures = new Hashtable<String, Structure>();
 		structuresToRemove = new ArrayList<Structure>();
 		
-		//units.put("tank", new Tank("tank", 1,1));
-		units.put("worker", new Worker("worker", 2, 2, 0));
-		
-		//structures.put("factory", new Factory("factory", 3,3));
-		
 		money = 100;
 	}
 	

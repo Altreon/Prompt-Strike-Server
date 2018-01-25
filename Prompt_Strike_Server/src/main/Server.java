@@ -10,18 +10,50 @@ import math.MATH;
 import network.Network;
 
 public class Server {
-	public static ArrayList<Player> players;
+	private static ArrayList<Player> players;
 	
-	public static Network network;
+	private static Network network;
 	
-	private long lastTime;
+	private static Command command;
+	
+	private static long lastTime;
 
 	public static void main(String[] args) {
 		players = new ArrayList<Player>();
+		
+		command = new Command();
 
 		network = new Network();
 		
 		network.createServer();
+		
+		while(true) {
+			update();
+		}
+	}
+	
+	public static void processCommand(int numPlayer, String commandText) {
+		boolean commandCorrect = command.processCommand(commandText);
+		if(commandCorrect) {
+			network.sendCorrectCommand(numPlayer, commandText);
+		}else {
+			network.sendIncorrectCommand(numPlayer, commandText);
+		}
+	}
+	
+	public static void newPlayer() {
+		players.add(new Player());
+		
+		network.sendCorrectCommand(players.size() - 1, "player");
+		//send an other player to the second player
+		int posX = 0;
+		if(players.size() == 1) {
+			posX = 1;
+		}else {
+			posX = 8;
+		}
+		players.get(players.size() - 1).addWorker("worker", posX*64, 2*64);
+		network.sendCorrectCommand(players.size() - 1, "create worker worker " + posX*64 + " " + 2*64);
 	}
 	
 	public static ArrayList<Unit> getAllUnits() {
@@ -50,9 +82,10 @@ public class Server {
 		return players;
 	}
 
-	public void update() {
+	public static void update() {
 		long currentTime = System.currentTimeMillis();
 		int dt = (int) (System.currentTimeMillis() - lastTime);
+		lastTime = currentTime;
 		
 		for( Structure structure : getAllstructures()) {
 			structure.update(dt);
@@ -62,9 +95,16 @@ public class Server {
 			unit.update(dt);
 		}
 		
-		destroyEntities();
+		//destroyEntities();
 		
-		lastTime = currentTime;
+		for(int i=0; i < players.size(); i++) {
+			Enumeration<Unit> unitsEnum = players.get(i).getUnits().elements();
+			while(unitsEnum.hasMoreElements()) {
+				Unit unit = unitsEnum.nextElement();
+				System.out.println(unit.getPos()[0]);
+				network.sendPos(i, unit.getName(), unit.getPos()[0], unit.getPos()[1]);
+			}
+		}
 	}
 	
 	private void destroyEntities () {
@@ -120,5 +160,4 @@ public class Server {
 	public static void createFactory(String name, float posX, float posY) {
 		players.get(0).addFactory(name, posX, posY);
 	}
-
 }

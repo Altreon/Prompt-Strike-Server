@@ -10,9 +10,12 @@ import main.Command;
 
 public class Server implements Runnable {
 	
-	private Socket socket;
 	private ServerSocket server;
-	private DataInputStream streamIn;
+	private Network network;
+	
+	public Server (Network network) {
+		this.network = network;
+	}
 
 	@Override
 	public void run() {
@@ -20,20 +23,17 @@ public class Server implements Runnable {
 			System.out.println("server initializing...");
 	        server = new ServerSocket(10);
 	        System.out.println("Server started: " + server);
-	        System.out.println("Waiting for a other player..."); 
-	        socket = server.accept();
-	        System.out.println("Player found: " + socket);
-	        open();
+	        System.out.println("Waiting for players..."); 
 	        boolean done = false;
-	        while (!done)
-	        {  try
-	           {  String line = streamIn.readUTF();
-	              Command.processCommand(line);
-	              done = line.equals("disconnect");
-	           }
-	           catch(IOException ioe)
-	           {  done = true;
-	           }
+	        while (!done) {  
+	        	try {
+	        		Socket socket = server.accept();
+	    	        System.out.println("Player found: " + socket);
+	    	        network.addClient(socket);
+	        	}
+	        	catch(IOException ioe){
+	        		done = true;
+	        	}
 	        }
 	        close();
 		}catch(IOException ioe) {
@@ -42,17 +42,10 @@ public class Server implements Runnable {
 		
 	}
 	
-	public void open() throws IOException
-	   {  streamIn = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-	   }
-	
 	public void close() throws IOException {
-		if (socket != null) {
-			socket.close();
+		if (server != null) {
+			server.close();
 		}
-	    if (streamIn != null) {
-	    	streamIn.close();
-	    }
 	}
 	
 }
