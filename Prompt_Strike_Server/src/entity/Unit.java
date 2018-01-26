@@ -39,4 +39,7 @@ public abstract class Unit extends Entity{
 		return rotation;
 	}
 	
+	public abstract boolean isMoving ();
+	public abstract boolean isRotating ();
+	
 }

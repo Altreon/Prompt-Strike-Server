@@ -27,8 +27,8 @@ public class Worker extends Unit{
 		
 		sprite = new Part(posX, posY, rotation);
 		
-		sprite.SPEEDMOVE = 1;
-		sprite.SPEEDROTATE = 1;
+		sprite.SPEEDMOVE = 64;
+		sprite.SPEEDROTATE = 5;
 		
 		action = "";
 	}
@@ -36,9 +36,19 @@ public class Worker extends Unit{
 	public static int getCost () {
 		return COST;
 	}
+	
+	@Override
+	public float[] getPos() {
+		return sprite.pos;
+	}
+	
+	@Override
+	public float getRotation() {
+		return sprite.rotation;
+	}
 
 	@Override
-	public void update(int dt) {
+	public void update(long dt) {
 		if(action.equals("build")) {
 			
 			if(actionTimeRemaining > 0) {
@@ -64,10 +74,10 @@ public class Worker extends Unit{
 		}else {
 		
 			if(sprite.isMoving()){
-				sprite.updateMove();
+				sprite.updateMove(dt);
 			}
 			if(sprite.isRotating()){
-				sprite.updateRotate();
+				sprite.updateRotate(dt);
 			}
 		
 			if(!sprite.isRotating() && waitMoveDistance != 0){
@@ -127,6 +137,16 @@ public class Worker extends Unit{
 	public void gather () {
 		action = "gather";
 		actionTimeRemaining = GATHERTIME;
+	}
+
+	@Override
+	public boolean isMoving() {
+		return sprite.isMoving();
+	}
+
+	@Override
+	public boolean isRotating() {
+		return sprite.isRotating();
 	}
 
 }

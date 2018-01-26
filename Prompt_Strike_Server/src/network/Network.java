@@ -4,6 +4,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 import message.PosMessage;
+import message.RotMessage;
 
 public class Network {
 	
@@ -61,6 +62,11 @@ public class Network {
 
 	public void sendPos(int numPlayer, String unitName, float posX, float posY) {
 		PosMessage message = new PosMessage(numPlayer, unitName, posX, posY);
+		UDPSender.sendMessage(message);
+	}
+
+	public void sendRot(int numPlayer, String unitName, float rotation) {
+		RotMessage message = new RotMessage(numPlayer, unitName, rotation);
 		UDPSender.sendMessage(message);
 	}
 }

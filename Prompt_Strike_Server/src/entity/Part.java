@@ -42,10 +42,10 @@ public class Part{
 		}
 	}
 	
-	public void updateMove () {
+	public void updateMove (long dt) {
 		float[] newPos = new float[2];
-		newPos[0] = (float) (pos[0] + SPEEDMOVE * moveDirection * Math.cos(rotation));
-		newPos[1] = (float) (pos[1] + SPEEDMOVE * moveDirection * Math.sin(rotation));
+		newPos[0] = (float) (pos[0] + SPEEDMOVE*(dt/1.0E9D) * moveDirection * Math.cos(rotation));
+		newPos[1] = (float) (pos[1] + SPEEDMOVE*(dt/1.0E9D) * moveDirection * Math.sin(rotation));
 		moveDistance -= (float) (MATH.dist(pos, newPos));
 		pos[0] = newPos[0];
 		pos[1] = newPos[1];
@@ -54,8 +54,8 @@ public class Part{
 		}
 	}
 	
-	public void updateRotate () {
-		float newRotation = rotation + SPEEDROTATE * rotateDirection;
+	public void updateRotate (long dt) {
+		float newRotation = (float) (rotation + SPEEDROTATE*(dt/1.0E9D) * rotateDirection);
 		rotateDistance -= (newRotation - rotation) * rotateDirection;
 		rotation = newRotation;
 		if(rotateDistance <= 0) {

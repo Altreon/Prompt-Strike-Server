@@ -83,8 +83,8 @@ public class Server {
 	}
 
 	public static void update() {
-		long currentTime = System.currentTimeMillis();
-		int dt = (int) (System.currentTimeMillis() - lastTime);
+		long currentTime = System.nanoTime();
+		long dt = System.nanoTime() - lastTime;
 		lastTime = currentTime;
 		
 		for( Structure structure : getAllstructures()) {
@@ -101,8 +101,13 @@ public class Server {
 			Enumeration<Unit> unitsEnum = players.get(i).getUnits().elements();
 			while(unitsEnum.hasMoreElements()) {
 				Unit unit = unitsEnum.nextElement();
-				System.out.println(unit.getPos()[0]);
-				network.sendPos(i, unit.getName(), unit.getPos()[0], unit.getPos()[1]);
+				if(unit.isMoving()) {
+					network.sendPos(i, unit.getName(), unit.getPos()[0], unit.getPos()[1]);
+				}
+				if(unit.isRotating()) {
+					System.out.println(unit.getRotation());
+					network.sendRot(i, unit.getName(), unit.getRotation());
+				}
 			}
 		}
 	}

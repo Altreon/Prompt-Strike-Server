@@ -13,6 +13,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import message.Message;
 import message.PosMessage;
 
 public class UDPClient implements Runnable{
@@ -87,7 +88,7 @@ public class UDPClient implements Runnable{
 
      }*/
 
-	public void sendMessage(PosMessage message) {
+	public void sendMessage(Message message) {
 		try {
 			ByteArrayOutputStream bStream = new ByteArrayOutputStream();
 			ObjectOutput oo = new ObjectOutputStream(bStream);

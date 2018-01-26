@@ -7,7 +7,7 @@ public abstract class Entity {
 	
 	protected float[] pos;
 	
-	public abstract void update(int dt);
+	public abstract void update(long dt);
 	
 	public Entity(String name, float posX, float posY) {
 		this.name = name;

@@ -35,13 +35,13 @@ public class Tank extends Unit {
 	}
 	
 	@Override
-	public void update(int dt) {
+	public void update(long dt) {
 		for(Part part : parts) {
 			if(part.isMoving()){
-				part.updateMove();
+				part.updateMove(dt);
 			}
 			if(part.isRotating()){
-				part.updateRotate();
+				part.updateRotate(dt);
 			}
 		}
 		
@@ -88,5 +88,15 @@ public class Tank extends Unit {
 
 	public void fire(int distance, int playerOwner) {
 		cannon.fire(distance, playerOwner);
+	}
+	
+	@Override
+	public boolean isMoving() {
+		return chassis.isMoving();
+	}
+
+	@Override
+	public boolean isRotating() {
+		return chassis.isMoving();
 	}
 }
