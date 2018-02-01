@@ -9,6 +9,7 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.MulticastSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -20,7 +21,8 @@ public class UDPClient implements Runnable{
 	
 	public final static int port = 2345;
 	
-	private DatagramSocket socket;
+	//private DatagramSocket socket;
+	private MulticastSocket socket;
 	
 	private Network network;
 
@@ -55,8 +57,11 @@ public class UDPClient implements Runnable{
 	
 	public void start() {
 		try {
-			socket = new DatagramSocket();
+			socket = new MulticastSocket();
 		} catch (SocketException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -88,7 +93,7 @@ public class UDPClient implements Runnable{
 
      }*/
 
-	public void sendMessage(Message message) {
+	public void sendMessage(Message message) {	
 		try {
 			ByteArrayOutputStream bStream = new ByteArrayOutputStream();
 			ObjectOutput oo = new ObjectOutputStream(bStream);

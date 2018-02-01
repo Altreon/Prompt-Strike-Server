@@ -11,17 +11,23 @@ import network.Network;
 
 public class Server {
 	private static ArrayList<Player> players;
+	private static ArrayList<Integer> playersToRemove;
 	
 	private static Network network;
 	
 	private static Command command;
+	private static ArrayList<String> commandWaitList;
+	private static ArrayList<Integer> commandWaitListInt;
 	
 	private static long lastTime;
 
-	public static void main(String[] args) {
+	public static void main(String[] args) {		
 		players = new ArrayList<Player>();
+		playersToRemove = new ArrayList<Integer>();
 		
 		command = new Command();
+		commandWaitList = new ArrayList<String>();
+		commandWaitListInt = new ArrayList<Integer>();
 
 		network = new Network();
 		
@@ -32,28 +38,41 @@ public class Server {
 		}
 	}
 	
-	public static void processCommand(int numPlayer, String commandText) {
-		boolean commandCorrect = command.processCommand(commandText);
-		if(commandCorrect) {
-			network.sendCorrectCommand(numPlayer, commandText);
+	public static void addCommandOnWaitList(int numPlayer, String commandText) {
+		commandWaitList.add(commandText);
+		commandWaitListInt.add(numPlayer);
+	}
+	
+	
+	private static void processCommand(int numPlayer, String commandText) {
+		if(commandText.equals("newPlayer")) {
+			newPlayer();
 		}else {
-			network.sendIncorrectCommand(numPlayer, commandText);
+			boolean commandCorrect = command.processCommand(commandText);
+			network.sendCommand(numPlayer, commandText, commandCorrect);
 		}
 	}
 	
-	public static void newPlayer() {
-		players.add(new Player());
+	private static void newPlayer() {
+		System.out.println("create");
+		players.add(new Player(players.size() - 1));
+		System.out.println("create finish");
 		
-		network.sendCorrectCommand(players.size() - 1, "player");
-		//send an other player to the second player
-		int posX = 0;
-		if(players.size() == 1) {
-			posX = 1;
-		}else {
-			posX = 8;
+		//players.get(players.size() - 1).addWorker("worker", posX*64, 2*64);
+		//network.sendCorrectCommand(players.size() - 1, "create worker worker " + posX*64 + " " + 2*64);
+		network.sendNewPlayer(players);
+		if(players.size() == 2) {
+			for(int i = 0; i < players.size(); i++) {
+				int posX = 0;
+				if(i == 0) {
+					posX = 1;
+				}else {
+					posX = 8;
+				}
+				
+				createWorker(i, "worker", posX*64, 2*64);
+			}
 		}
-		players.get(players.size() - 1).addWorker("worker", posX*64, 2*64);
-		network.sendCorrectCommand(players.size() - 1, "create worker worker " + posX*64 + " " + 2*64);
 	}
 	
 	public static ArrayList<Unit> getAllUnits() {
@@ -83,6 +102,7 @@ public class Server {
 	}
 
 	public static void update() {
+		//System.out.println("update");
 		long currentTime = System.nanoTime();
 		long dt = System.nanoTime() - lastTime;
 		lastTime = currentTime;
@@ -95,8 +115,6 @@ public class Server {
 			unit.update(dt);
 		}
 		
-		//destroyEntities();
-		
 		for(int i=0; i < players.size(); i++) {
 			Enumeration<Unit> unitsEnum = players.get(i).getUnits().elements();
 			while(unitsEnum.hasMoreElements()) {
@@ -105,15 +123,27 @@ public class Server {
 					network.sendPos(i, unit.getName(), unit.getPos()[0], unit.getPos()[1]);
 				}
 				if(unit.isRotating()) {
-					System.out.println(unit.getRotation());
 					network.sendRot(i, unit.getName(), unit.getRotation());
 				}
 			}
 		}
+		
+		destroyEntities();
+		
+		while(!commandWaitListInt.isEmpty()) {
+			processCommand(commandWaitListInt.remove(0), commandWaitList.remove(0));
+		}
 	}
 	
-	private void destroyEntities () {
-
+	private static void destroyEntities () {
+		for(int numPlayer : playersToRemove) {
+			System.out.println("remove");
+			players.remove(numPlayer);
+			for(int i = numPlayer; i < players.size(); i++) {
+				players.get(i).decrementNum();
+			}
+		}
+		playersToRemove.clear();
 		
 	}
 	
@@ -154,15 +184,24 @@ public class Server {
 		
 	}
 
-	public static void createTank(String name, float posX, float posY) {
-		players.get(0).addTank(name, posX, posY);
+	public static void createTank(int numPlayer, String name, float posX, float posY) {
+		players.get(numPlayer).addTank(name, posX, posY);
+		network.sendNewEntity(numPlayer, "tank", name, posX, posY, 0);
 	}
 	
-	public static void createWorker(String name, float posX, float posY) {
-		players.get(0).addWorker(name, posX, posY);
+	public static void createWorker(int numPlayer, String name, float posX, float posY) {
+		players.get(numPlayer).addWorker(name, posX, posY);
+		network.sendNewEntity(numPlayer, "worker", name, posX, posY, 0);
 	}
 
-	public static void createFactory(String name, float posX, float posY) {
-		players.get(0).addFactory(name, posX, posY);
+	public static void createFactory(int numPlayer, String name, float posX, float posY) {
+		players.get(numPlayer).addFactory(name, posX, posY);
+		network.sendNewEntity(numPlayer, "factory", name, posX, posY, 0);
+	}
+
+	public static void removePlayer(int nPlayer) {
+		System.out.println("The player " + nPlayer + " was disconnected");
+		
+		playersToRemove.add(nPlayer);	
 	}
 }

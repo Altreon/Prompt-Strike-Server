@@ -10,8 +10,8 @@ public class Tank extends Unit {
 	
 	private Part[] parts;
 
-	public Tank (String name, float posX, float posY, float rotation) {
-		super(name, posX * 64, posY * 64, rotation);
+	public Tank (int owner, String name, float posX, float posY, float rotation) {
+		super(owner, name, posX * 64, posY * 64, rotation);
 		
 		parts = new Part[2];
 		
@@ -66,7 +66,7 @@ public class Tank extends Unit {
 	}
 	
 	@Override
-	public void rotate(int distance) {
+	public void rotate(float distance) {
 		if(distance > 0) {
 			chassis.rotateDistance = distance;
 			chassis.rotateDirection = 1;

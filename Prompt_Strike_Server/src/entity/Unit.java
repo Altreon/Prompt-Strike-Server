@@ -8,8 +8,8 @@ public abstract class Unit extends Entity{
 	
 	protected int waitMoveDistance;
 	
-	public Unit(String name, float posX, float posY, float rotation) {
-		super(name, posX, posY);
+	public Unit(int owner, String name, float posX, float posY, float rotation) {
+		super(owner, name, posX, posY);
 		this.rotation = rotation;
 	}
 
@@ -26,14 +26,14 @@ public abstract class Unit extends Entity{
 			angle = -angle;
 		}
 		
-		rotate((int) angle);
+		rotate(angle);
 		//NON TERMINE
 		
 		waitMoveDistance = (int) (MATH.norme(vectDir));
 		
 	}
 
-	public abstract void rotate(int distance);
+	public abstract void rotate(float distance);
 	
 	public float getRotation() {
 		return rotation;

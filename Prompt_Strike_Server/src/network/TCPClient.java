@@ -1,15 +1,23 @@
 package network;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+
+import message.CreateEntityMessage;
+import message.Message;
 
 public class TCPClient implements Runnable{
 	private Socket socket;
 	private DataInputStream streamIn;
-	private DataOutputStream streamOut;
+	private ObjectOutputStream streamOut;
 	
 	private Network network;
 
@@ -30,7 +38,7 @@ public class TCPClient implements Runnable{
 		while (connect) {  
 			try {  
 				String command = streamIn.readUTF();
-				main.Server.processCommand(network.getNumClient(this), command);
+				main.Server.addCommandOnWaitList(network.getNumClient(this), command);
 		        
 		    } catch(IOException ioe) {
 		    	System.out.println("Connexion error");
@@ -42,7 +50,7 @@ public class TCPClient implements Runnable{
 	
 	public void start() throws IOException{  
 		streamIn = new DataInputStream(socket.getInputStream());
-	    streamOut = new DataOutputStream(socket.getOutputStream());
+	    streamOut = new ObjectOutputStream(socket.getOutputStream());
 	}
 	
     public void stop() {
@@ -56,16 +64,16 @@ public class TCPClient implements Runnable{
     	}
     	network.removeClient(this);
    }
-    
-    public void sendCommand (int numPlayer, String command, boolean correct) {
-    	try {
-    		while(streamOut == null) {};
-    		streamOut.writeInt(numPlayer);
-			streamOut.writeUTF(command);
-			streamOut.writeBoolean(correct);
+
+	public void sendMessage(Message message) {
+		try {
+	        while(streamOut == null) {};
+    		streamOut.writeObject(message);
 			streamOut.flush();
-		} catch (IOException ioe) {
-			System.out.println("Error sending command:" + ioe.getMessage());
-		}
-    }
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		
+	}
 }

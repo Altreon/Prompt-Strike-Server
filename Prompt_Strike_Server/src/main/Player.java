@@ -1,6 +1,7 @@
 package main;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Hashtable;
 
 import entity.Entity;
@@ -12,6 +13,8 @@ import entity.Worker;
 
 public class Player {
 	
+	private int num;
+	
 	private int money;
 	
 	private static Hashtable<String, Unit> units;
@@ -20,7 +23,8 @@ public class Player {
 	private static Hashtable<String, Structure> structures;
 	private static ArrayList<Structure> structuresToRemove;
 	
-	public Player () {
+	public Player (int num) {
+		this.num = num;
 		units = new Hashtable<String, Unit>();
 		unitsToRemove = new ArrayList<Unit>();
 		
@@ -120,16 +124,16 @@ public class Player {
 	}
 	
 	public void addTank(String name, float posX, float posY) {
-		units.put(name, new Tank(name, posX, posY, 0));
+		units.put(name, new Tank(num, name, posX, posY, 0));
 		
 	}
 	
 	public void addWorker(String name, float posX, float posY) {
-		units.put(name, new Worker(name, posX, posY, 0));
+		units.put(name, new Worker(num, name, posX, posY, 0));
 	}
 	
 	public void addFactory(String name, float posX, float posY) {
-		structures.put(name, new Factory(name, posX, posY));
+		structures.put(name, new Factory(num, name, posX, posY));
 	}
 
 	public void destroyEntity(Entity entity) {
@@ -138,6 +142,23 @@ public class Player {
 			units.remove(entity.getName());
 		}else {
 			structures.remove(entity.getName());
+		}
+		
+	}
+
+	public void decrementNum() {
+		num--;
+		
+		Enumeration<Unit> unitsEnum = units.elements();
+		while(unitsEnum.hasMoreElements()) {
+			Unit unit = unitsEnum.nextElement();
+			unit.setOwner(num);
+		}
+		
+		Enumeration<Structure> structuresEnum = structures.elements();
+		while(structuresEnum.hasMoreElements()) {
+			Structure struct = structuresEnum.nextElement();
+			struct.setOwner(num);
 		}
 		
 	}

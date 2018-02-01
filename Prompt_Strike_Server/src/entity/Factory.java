@@ -17,8 +17,8 @@ public class Factory extends Structure{
 	private int prodType;
 	private String prodName;
 	
-	public Factory(String name, float posX, float posY) {
-		super(name, posX, posY);
+	public Factory(int owner, String name, float posX, float posY) {
+		super(owner, name, posX, posY);
 		prodTimeRemaining = -1;
 	}
 	
@@ -32,9 +32,9 @@ public class Factory extends Structure{
 			prodTimeRemaining = System.currentTimeMillis() - prodTimeStart;
 			if(prodTimeRemaining >= prodTime[prodType]) {
 				if(prodType == TANK) {
-					Server.createTank(prodName, pos[0], pos[1]);
+					Server.createTank(owner, prodName, pos[0], pos[1]);
 				}else {
-					Server.createWorker(prodName, pos[0], pos[1]);
+					Server.createWorker(owner, prodName, pos[0], pos[1]);
 				}
 				prodTimeRemaining = -1;
 			}

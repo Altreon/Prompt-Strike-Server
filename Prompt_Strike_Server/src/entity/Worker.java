@@ -22,13 +22,13 @@ public class Worker extends Unit{
 	
 	private final int GATHERTIME = 1000;
 	
-	public Worker (String name, float posX, float posY, float rotation) {
-		super(name, posX, posY, rotation);
+	public Worker (int owner, String name, float posX, float posY, float rotation) {
+		super(owner, name, posX, posY, rotation);
 		
 		sprite = new Part(posX, posY, rotation);
 		
 		sprite.SPEEDMOVE = 64;
-		sprite.SPEEDROTATE = 5;
+		sprite.SPEEDROTATE = 45;
 		
 		action = "";
 	}
@@ -56,7 +56,7 @@ public class Worker extends Unit{
 			}else {
 				actionTimeRemaining = 0;
 				if(buildType == FACTORY) {
-					Server.createFactory(buildName, (int)(pos[0]/64 - 224/64), (int)(pos[1]/64));
+					Server.createFactory(owner, buildName, (int)(pos[0]/64 - 224/64), (int)(pos[1]/64));
 				}else {
 					//rien pour le moment
 				}
@@ -101,7 +101,7 @@ public class Worker extends Unit{
 	}
 
 	@Override
-	public void rotate(int distance) {
+	public void rotate(float distance) {
 		if(distance > 0) {
 			sprite.rotateDistance = distance;
 			sprite.rotateDirection = 1;
