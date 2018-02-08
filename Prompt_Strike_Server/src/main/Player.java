@@ -13,15 +13,17 @@ import entity.Worker;
 
 public class Player {
 	
+	private final int MAINPART = 0;
+	
 	private int num;
 	
 	private int money;
 	
-	private static Hashtable<String, Unit> units;
-	private static ArrayList<Unit> unitsToRemove;
+	private Hashtable<String, Unit> units;
+	private ArrayList<Unit> unitsToRemove;
 	
-	private static Hashtable<String, Structure> structures;
-	private static ArrayList<Structure> structuresToRemove;
+	private Hashtable<String, Structure> structures;
+	private ArrayList<Structure> structuresToRemove;
 	
 	public Player (int num) {
 		this.num = num;
@@ -66,16 +68,12 @@ public class Player {
 		units.get(name).move(posX, posY);
 	}
 	
-	public void rotateUnit(String name, int value) {
-		units.get(name).rotate(value);
+	public void rotateUnit(String name, int value, int idPart) {
+		units.get(name).rotate(value, idPart);
 	}
 	
 	public boolean unitCanRotateCannon(String name) {
 		return units.get(name).getClass().getSimpleName().equals("Tank");
-	}
-	
-	public void rotateCannon(String name, int value) {
-		((Tank) units.get(name)).rotateCannon(value);
 	}
 	
 	public boolean unitCanFire(String name) {

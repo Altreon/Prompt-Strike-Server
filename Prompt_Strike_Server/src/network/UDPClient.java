@@ -19,13 +19,9 @@ import message.PosMessage;
 
 public class UDPClient implements Runnable{
 	
-	public final static int port = 2345;
-	
-	//private DatagramSocket socket;
-	private MulticastSocket socket;
+	private DatagramSocket socket;
 	
 	private Network network;
-
 	public UDPClient(Network network) {
 		this.network = network;
 		
@@ -39,7 +35,7 @@ public class UDPClient implements Runnable{
 		while (connect) {  
 			try { 
 				
-				byte[] buffer = new byte[8192];
+				byte[] buffer = new byte[256];
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 
                 socket.receive(packet);
@@ -57,11 +53,8 @@ public class UDPClient implements Runnable{
 	
 	public void start() {
 		try {
-			socket = new MulticastSocket();
+			socket = new DatagramSocket();
 		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -93,7 +86,7 @@ public class UDPClient implements Runnable{
 
      }*/
 
-	public void sendMessage(Message message) {	
+	public void sendMessage(Message message, InetAddress adress, int port) {	
 		try {
 			ByteArrayOutputStream bStream = new ByteArrayOutputStream();
 			ObjectOutput oo = new ObjectOutputStream(bStream);
@@ -101,8 +94,7 @@ public class UDPClient implements Runnable{
 			oo.close();
 			
 			byte[] buffer = bStream.toByteArray();
-	    	InetAddress adresse = InetAddress.getByName("127.0.0.1");
-	        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, adresse, port);
+	        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, adress, port);
 	        
 	        packet.setData(buffer);
 	        

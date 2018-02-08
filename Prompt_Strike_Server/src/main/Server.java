@@ -48,15 +48,13 @@ public class Server {
 		if(commandText.equals("newPlayer")) {
 			newPlayer();
 		}else {
-			boolean commandCorrect = command.processCommand(commandText);
+			boolean commandCorrect = command.processCommand(numPlayer, commandText);
 			network.sendCommand(numPlayer, commandText, commandCorrect);
 		}
 	}
 	
 	private static void newPlayer() {
-		System.out.println("create");
-		players.add(new Player(players.size() - 1));
-		System.out.println("create finish");
+		players.add(new Player(players.size()));
 		
 		//players.get(players.size() - 1).addWorker("worker", posX*64, 2*64);
 		//network.sendCorrectCommand(players.size() - 1, "create worker worker " + posX*64 + " " + 2*64);
@@ -71,6 +69,7 @@ public class Server {
 				}
 				
 				createWorker(i, "worker", posX*64, 2*64);
+				createTank(i, "t", posX*64 + 64, 2*64 + 64);
 			}
 		}
 	}
@@ -102,7 +101,6 @@ public class Server {
 	}
 
 	public static void update() {
-		//System.out.println("update");
 		long currentTime = System.nanoTime();
 		long dt = System.nanoTime() - lastTime;
 		lastTime = currentTime;
@@ -122,8 +120,11 @@ public class Server {
 				if(unit.isMoving()) {
 					network.sendPos(i, unit.getName(), unit.getPos()[0], unit.getPos()[1]);
 				}
-				if(unit.isRotating()) {
-					network.sendRot(i, unit.getName(), unit.getRotation());
+				
+				for(int k = 0; k < unit.getParts().length; k++) {
+					if(unit.getParts()[k].isRotating()) {
+						network.sendRot(i, unit.getName(), unit.getParts()[k].getRotation(), k);
+					}
 				}
 			}
 		}
@@ -137,7 +138,6 @@ public class Server {
 	
 	private static void destroyEntities () {
 		for(int numPlayer : playersToRemove) {
-			System.out.println("remove");
 			players.remove(numPlayer);
 			for(int i = numPlayer; i < players.size(); i++) {
 				players.get(i).decrementNum();
@@ -155,11 +155,11 @@ public class Server {
 		players.get(0).removeMoney(amont);
 	}
 	
-	public static void applyDamage(float posX, float posY, int radius, int amount, int playerExluded) {
+	public static void applyFire(float posX, float posY, int radius, int amount, int playerExluded, String nameUnit) {
 		ArrayList<Entity> entityTouched = new ArrayList<Entity>();
 		for (Unit unit : getAllUnits()) {
 			float[] posDamageUnit = {unit.getPos()[0] - posX, unit.getPos()[1] - posY};
-			if(!players.get(playerExluded).isUnit(unit.getName()) && MATH.norme(posDamageUnit) <= radius*64) {
+			if(unit.getOwner() != playerExluded && MATH.norme(posDamageUnit) <= radius) {
 				System.out.println("touch!");;
 				entityTouched.add(unit);
 			}
@@ -168,7 +168,7 @@ public class Server {
 		
 		for (Structure struct : getAllstructures()) {
 			float[] posDamageStruct = {struct.getPos()[0] - posX, struct.getPos()[1] - posY};
-			if(!players.get(playerExluded).isStructure(struct.getName()) && MATH.norme(posDamageStruct) <= radius*64) {
+			if(struct.getOwner() != playerExluded && MATH.norme(posDamageStruct) <= radius) {
 				System.out.println("touch!");
 				entityTouched.add(struct);
 			}
@@ -178,9 +178,13 @@ public class Server {
 		for (Entity entity : entityTouched) {
 			entity.changeHP(-amount);
 			if(entity.getHP() <= 0) {
-				players.get(0).destroyEntity(entity);
+				players.get(entity.getOwner()).destroyEntity(entity);
+				System.out.println(entity.getClass().getSuperclass().getSimpleName());
+				network.sendDestroyEntity(entity.getOwner(), entity.getClass().getSuperclass().getSimpleName(), entity.getName());
 			}
 		}
+		
+		network.sendFire(playerExluded, nameUnit, posX, posY);
 		
 	}
 

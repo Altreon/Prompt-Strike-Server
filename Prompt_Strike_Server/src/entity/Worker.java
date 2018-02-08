@@ -7,7 +7,7 @@ public class Worker extends Unit{
 	
 	private static final int COST = 10;
 
-	private Part sprite;
+	private Part body;
 	
 	private final int FACTORY = 0;
 	
@@ -23,28 +23,19 @@ public class Worker extends Unit{
 	private final int GATHERTIME = 1000;
 	
 	public Worker (int owner, String name, float posX, float posY, float rotation) {
-		super(owner, name, posX, posY, rotation);
+		super(owner, name, posX, posY, 1);
 		
-		sprite = new Part(posX, posY, rotation);
+		body = new Part(this, rotation);
+		parts[0] = body;
 		
-		sprite.SPEEDMOVE = 64;
-		sprite.SPEEDROTATE = 45;
+		SPEEDMOVE = 64;
+		body.SPEEDROTATE = 45;
 		
 		action = "";
 	}
 	
 	public static int getCost () {
 		return COST;
-	}
-	
-	@Override
-	public float[] getPos() {
-		return sprite.pos;
-	}
-	
-	@Override
-	public float getRotation() {
-		return sprite.rotation;
 	}
 
 	@Override
@@ -56,7 +47,7 @@ public class Worker extends Unit{
 			}else {
 				actionTimeRemaining = 0;
 				if(buildType == FACTORY) {
-					Server.createFactory(owner, buildName, (int)(pos[0]/64 - 224/64), (int)(pos[1]/64));
+					Server.createFactory(owner, buildName, pos[0], pos[1]);
 				}else {
 					//rien pour le moment
 				}
@@ -68,52 +59,18 @@ public class Worker extends Unit{
 				actionTimeRemaining -= dt;
 			}else {
 				actionTimeRemaining = 0;
-				Server.addMoney(1);;
+				Server.addMoney(1);
 				gather();
 			}
 		}else {
 		
-			if(sprite.isMoving()){
-				sprite.updateMove(dt);
-			}
-			if(sprite.isRotating()){
-				sprite.updateRotate(dt);
-			}
-		
-			if(!sprite.isRotating() && waitMoveDistance != 0){
-				move(waitMoveDistance);
-				waitMoveDistance = 0;
-			}
+			super.update(dt);
 		}
 		
-	}
-
-	@Override
-	public void move(int distance) {
-		if(distance > 0) {
-			sprite.moveDistance = distance*64;
-			sprite.moveDirection = 1;
-		}else {
-			sprite.moveDistance = -distance*64;
-			sprite.moveDirection = -1;
-		}
-		action = "";
-	}
-
-	@Override
-	public void rotate(float distance) {
-		if(distance > 0) {
-			sprite.rotateDistance = distance;
-			sprite.rotateDirection = 1;
-		}else {
-			sprite.rotateDistance = -distance;
-			sprite.rotateDirection = -1;
-		}
-		action = "";
 	}
 
 	public boolean canBuild(String structure) {
-		return structure.equals("factory") && Server.getPlayers().get(0).sufficientMoney(Factory.getCost());
+		return structure.equals("factory") && Server.getPlayers().get(owner).sufficientMoney(Factory.getCost());
 	}
 	
 	public void build (String structure, String structName) {
@@ -137,16 +94,6 @@ public class Worker extends Unit{
 	public void gather () {
 		action = "gather";
 		actionTimeRemaining = GATHERTIME;
-	}
-
-	@Override
-	public boolean isMoving() {
-		return sprite.isMoving();
-	}
-
-	@Override
-	public boolean isRotating() {
-		return sprite.isRotating();
 	}
 
 }

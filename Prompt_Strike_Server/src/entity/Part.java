@@ -3,35 +3,22 @@ package entity;
 import math.MATH;
 
 public class Part{
-	protected float SPEEDMOVE;
 	protected float SPEEDROTATE;
 	
-	protected float[] pos;
 	protected float rotation;
 	
-	protected float moveDistance;
-	protected float moveDirection;
 	protected float rotateDistance;
 	protected float rotateDirection;
 	
-	public Part(float posX, float posY, float rotation) {
-		pos = new float[2];
-		pos[0] = posX;
-		pos[1] = posY;
+	protected Unit owner;
+	
+	public Part(Unit owner, float rotation) {
+		this.owner = owner;
 		this.rotation = rotation;
 	}
 	
-	public void setPosition (float posX, float posY) {
-		pos[0] = posX;
-		pos[1] = posY;
-	}
-	
-	public boolean isMoving () {
-		if (moveDistance == 0) {
-			return false;
-		}else {
-			return true;
-		}
+	public float getRotation() {
+		return rotation;
 	}
 	
 	public boolean isRotating () {
@@ -39,18 +26,6 @@ public class Part{
 			return false;
 		}else {
 			return true;
-		}
-	}
-	
-	public void updateMove (long dt) {
-		float[] newPos = new float[2];
-		newPos[0] = (float) (pos[0] + SPEEDMOVE*(dt/1.0E9D) * moveDirection * Math.cos(Math.toRadians(rotation)));
-		newPos[1] = (float) (pos[1] + SPEEDMOVE*(dt/1.0E9D) * moveDirection * Math.sin(Math.toRadians(rotation)));
-		moveDistance -= (float) (MATH.dist(pos, newPos));
-		pos[0] = newPos[0];
-		pos[1] = newPos[1];
-		if(moveDistance <= 0) {
-			moveDistance = 0;
 		}
 	}
 	

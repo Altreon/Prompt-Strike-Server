@@ -2,15 +2,14 @@ package entity;
 
 public class Chassis extends Part{
 	
-	private Part attachPart;
+	//private Part attachPart;
 	
-	public Chassis (Part attachPart, float posX, float posY, float rotation) {
-		super(posX, posY, rotation);
+	public Chassis (Unit owner, float rotation) {
+		super(owner, rotation);
 		
-		SPEEDMOVE = 1;
-		SPEEDROTATE = 1;
+		SPEEDROTATE = 45;
 		
-		this.attachPart = attachPart;
+		//this.attachPart = attachPart;
 	}
 	
 	//@Override

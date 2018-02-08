@@ -1,6 +1,8 @@
 package network;
 
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import main.Player;
@@ -13,11 +15,17 @@ public class Network {
 	
 	private ArrayList<TCPClient> TCPClients;
 	private ArrayList<Thread> TCPClientThreads;
+	
+	private ArrayList<InetAddress> addresses;
+	private ArrayList<Integer> ports;
 	private UDPClient UDPSender;
 	
 	public Network () {
 		TCPClients = new ArrayList<TCPClient>();
 		TCPClientThreads = new ArrayList<Thread>();
+		
+		addresses = new ArrayList<InetAddress>();
+		ports = new ArrayList<Integer>();
 	}
 	
 	public void createServer () {
@@ -36,13 +44,18 @@ public class Network {
 		TCPClients.add(client);
 		TCPClientThreads.add(clientThread);
 		
+		addresses.add(socket.getInetAddress());
+		ports.add(socket.getPort());
+		
 		main.Server.addCommandOnWaitList(0, "newPlayer");
 	}
-	
+
 	public void removeClient(TCPClient client) {
 		int nClient = getNumClient(client);
 		TCPClients.remove(nClient);
 		TCPClientThreads.remove(nClient);
+		addresses.remove(nClient);
+		ports.remove(nClient);
 		main.Server.removePlayer(nClient);
 	}
 	
@@ -68,21 +81,41 @@ public class Network {
 		}
 		
 	}
-
-	public void sendPos(int numPlayer, String unitName, float posX, float posY) {
-		PosMessage message = new PosMessage(numPlayer, unitName, posX, posY);
-		UDPSender.sendMessage(message);
-	}
-
-	public void sendRot(int numPlayer, String unitName, float rotation) {
-		RotMessage message = new RotMessage(numPlayer, unitName, rotation);
-		UDPSender.sendMessage(message);
-	}
-
+	
 	public void sendNewEntity(int numPlayer, String typeEntity, String nameEntity, float posX, float posY, float rotation) {
 		for(TCPClient client : TCPClients) {
 			CreateEntityMessage message = new CreateEntityMessage(numPlayer, typeEntity, nameEntity, posX, posY, rotation);
 			client.sendMessage(message);
 		}
+	}
+	
+	public void sendDestroyEntity(int numPlayer, String typeEntity, String nameEntity) {
+		for(TCPClient client : TCPClients) {
+			DestroyEntityMessage message = new DestroyEntityMessage(numPlayer, typeEntity, nameEntity);
+			client.sendMessage(message);
+		}
+	}
+	
+	public void sendFire(int numPlayer, String nameEntity, float ImpactPosX, float ImpactPosY) {
+		for(TCPClient client : TCPClients) {
+			FireMessage message = new FireMessage(numPlayer, nameEntity, ImpactPosX, ImpactPosY);
+			client.sendMessage(message);
+		}
+	}
+	
+	private void sendUPDMessage(Message message) {
+		for(int i = 0; i < TCPClients.size(); i++) {
+			UDPSender.sendMessage(message, addresses.get(i), ports.get(i));
+		}
+	}
+
+	public void sendPos(int numPlayer, String unitName, float posX, float posY) {
+		PosMessage message = new PosMessage(numPlayer, unitName, posX, posY);
+		sendUPDMessage(message);
+	}
+
+	public void sendRot(int numPlayer, String unitName, float rotation, int idPart) {
+		RotMessage message = new RotMessage(numPlayer, unitName, rotation, idPart);
+		sendUPDMessage(message);
 	}
 }

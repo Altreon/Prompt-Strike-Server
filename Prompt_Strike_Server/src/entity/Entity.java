@@ -3,7 +3,7 @@ package entity;
 public abstract class Entity {
 	
 	protected int owner;
-	private String name;
+	protected String name;
 	private int HP;
 	
 	protected float[] pos;

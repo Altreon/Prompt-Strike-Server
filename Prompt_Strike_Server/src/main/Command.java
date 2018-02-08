@@ -4,10 +4,10 @@ import java.util.ArrayList;
 
 public class Command {
 	
-	//garder?
-	private static int player = 0;
+	private static final int MAINPART = 0;
+	private static final int CANNONPART = 1;
 
-	public boolean processCommand(String commandText) {
+	public boolean processCommand(int player, String commandText) {
 		boolean commandCorrect = false;
 		
 		ArrayList<String> words = new ArrayList<String>();
@@ -18,15 +18,15 @@ public class Command {
 		String firstWord = words.remove(0);
 		
 		if (Server.getPlayers().get(player).isUnit(firstWord)) {
-			commandCorrect = unitCommand(firstWord, words);
+			commandCorrect = unitCommand(player, firstWord, words);
 		}else if (Server.getPlayers().get(player).isStructure(firstWord)) {
-			commandCorrect = structCommand(firstWord, words);
+			commandCorrect = structCommand(player, firstWord, words);
 		}
 		return commandCorrect;
 			
 	}
 
-	private static boolean unitCommand(String unitName, ArrayList<String> words) {
+	private static boolean unitCommand(int player, String unitName, ArrayList<String> words) {
 		if (words.size() == 0) {
 			return false;
 		}
@@ -34,39 +34,39 @@ public class Command {
 		String nextWord = words.remove(0);
 		
 		if (nextWord.equals("move") || nextWord.equals("m")) {
-			return move(unitName, words);
+			return move(player, unitName, words);
 		}
 		
 		if (nextWord.equals("rotate") || nextWord.equals("r")) {
-			return rotate(unitName, words);
+			return rotate(player, unitName, words);
 		}
 		
 		if (nextWord.equals("fire") || nextWord.equals("f")) {
-			return fire(unitName, words);
+			return fire(player, unitName, words);
 		}
 		
 		if (nextWord.equals("build") || nextWord.equals("b")) {
-			return build(unitName, words);
+			return build(player, unitName, words);
 		}
 		
 		if (nextWord.equals("gather") || nextWord.equals("g")) {
-			return gather(unitName, words);
+			return gather(player, unitName, words);
 		}
 		
 		return false;
 	}
 
-	private static boolean move(String unitName, ArrayList<String> words) {
+	private static boolean move(int player, String unitName, ArrayList<String> words) {
 		if (words.size() == 1) {
-			return moveDir(unitName, words);
+			return moveDir(player, unitName, words);
 		}else if (words.size() == 2) {
-			return movePos(unitName, words);
+			return movePos(player, unitName, words);
 		}else {
 			return false;
 		}
 	}
 	
-	private static boolean moveDir(String unitName, ArrayList<String> words) {
+	private static boolean moveDir(int player, String unitName, ArrayList<String> words) {
 		int value = 0;
 		try {
 			value = Integer.parseInt(words.get(0));
@@ -82,7 +82,7 @@ public class Command {
 		return false;
 	}
 	
-	private static boolean movePos(String unitName, ArrayList<String> words) {
+	private static boolean movePos(int player, String unitName, ArrayList<String> words) {
 		int posX = 0;
 		int posY = 0;
 		try {
@@ -100,20 +100,20 @@ public class Command {
 		return false;
 	}
 	
-	private static boolean rotate(String unitName, ArrayList<String> words) {
+	private static boolean rotate(int player, String unitName, ArrayList<String> words) {
 		if (words.size() == 0) {
 			return false;
 		}
 		
 		String nextWord = words.remove(0);
 		if(nextWord.equals("cannon") || nextWord.equals("c")) {
-			return rotateCannon(unitName, words);
+			return rotateCannon(player, unitName, words);
 		}else {
-			return rotateUnit(unitName, nextWord, words);
+			return rotateUnit(player, unitName, nextWord, words);
 		}
 	}
 	
-	private static boolean rotateUnit(String unitName, String sValue, ArrayList<String> words) {
+	private static boolean rotateUnit(int player, String unitName, String sValue, ArrayList<String> words) {
 		if (words.size() != 0) {
 			return false;
 		}
@@ -126,14 +126,14 @@ public class Command {
 	    }
 		
 		if(value >= -360 && value <= 360) {
-			Server.getPlayers().get(player).rotateUnit(unitName, value);
+			Server.getPlayers().get(player).rotateUnit(unitName, value, MAINPART);
 			return true;
 		}
 		
 		return false;
 	}
 	
-	private static boolean rotateCannon(String unitName, ArrayList<String> words) {
+	private static boolean rotateCannon(int player, String unitName, ArrayList<String> words) {
 		if (words.size() != 1 || !Server.getPlayers().get(player).unitCanRotateCannon(unitName)) {
 			return false;
 		}
@@ -146,14 +146,14 @@ public class Command {
 	    }
 		
 		if(value >= -360 && value <= 360) {
-			Server.getPlayers().get(player).rotateCannon(unitName, value);
+			Server.getPlayers().get(player).rotateUnit(unitName, value, CANNONPART);
 			return true;
 		}
 		
 		return false;
 	}
 	
-	private static boolean fire(String unitName, ArrayList<String> words) {
+	private static boolean fire(int player, String unitName, ArrayList<String> words) {
 		if (words.size() != 1 || !Server.getPlayers().get(player).unitCanFire(unitName)) {
 			return false;
 		}
@@ -173,7 +173,7 @@ public class Command {
 		return false;
 	}
 	
-	private static boolean build(String unitName, ArrayList<String> words) {
+	private static boolean build(int player, String unitName, ArrayList<String> words) {
 		if (words.size() != 2) {
 			return false;
 		}
@@ -189,7 +189,7 @@ public class Command {
 		return false;
 	}
 	
-	private static boolean gather (String unitName, ArrayList<String> words) {
+	private static boolean gather (int player, String unitName, ArrayList<String> words) {
 		if (words.size() != 0) {
 			return false;
 		}
@@ -202,7 +202,7 @@ public class Command {
 		return false;
 	}
 	
-	private static boolean structCommand(String structName, ArrayList<String> words) {
+	private static boolean structCommand(int player, String structName, ArrayList<String> words) {
 		if (words.size() == 0) {
 			return false;
 		}
@@ -210,13 +210,13 @@ public class Command {
 		String nextWord = words.remove(0);
 		
 		if (nextWord.equals("produce") || nextWord.equals("p")) {
-			return produce(structName, words);
+			return produce(player, structName, words);
 		}
 		
 		return false;
 	}
 
-	private static boolean produce(String structName, ArrayList<String> words) {
+	private static boolean produce(int player, String structName, ArrayList<String> words) {
 		if (words.size() != 2) {
 			return false;
 		}
