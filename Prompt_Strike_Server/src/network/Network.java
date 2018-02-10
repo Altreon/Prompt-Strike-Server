@@ -103,6 +103,11 @@ public class Network {
 		}
 	}
 	
+	public void sendUpdateMoney(int numPlayer, int money) {
+		UpdateMoneyMessage message = new UpdateMoneyMessage(numPlayer, money);
+		TCPClients.get(numPlayer).sendMessage(message);
+	}
+	
 	private void sendUPDMessage(Message message) {
 		for(int i = 0; i < TCPClients.size(); i++) {
 			UDPSender.sendMessage(message, addresses.get(i), ports.get(i));

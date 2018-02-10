@@ -20,8 +20,8 @@ public class Cannon extends Part{
 		//float firePosX = (float) (owner.pos[0] + 64/1.3f*Math.cos(rotation));
 		//float firePosY = (float) (owner.pos[1] + 64/1.3f*Math.sin(rotation));
 		
-		float ImpactPosX = (float) (owner.pos[0] + distance*64*Math.cos(rotation));
-		float ImpactPosY = (float) (owner.pos[1] + distance*64*Math.sin(rotation));
+		float ImpactPosX = (float) (owner.pos[0] + distance*64*Math.cos(Math.toRadians(rotation)));
+		float ImpactPosY = (float) (owner.pos[1] + distance*64*Math.sin(Math.toRadians(rotation)));
 		
 		Server.applyFire(ImpactPosX, ImpactPosY, IMPACTRADIUS, IMPACTDAMAGE, playerOwner, nameUnit);
 		

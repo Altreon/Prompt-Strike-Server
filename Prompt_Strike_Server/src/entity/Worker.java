@@ -12,15 +12,14 @@ public class Worker extends Unit{
 	private final int FACTORY = 0;
 	
 	private String action;
-	private int actionTimeRemaining;
+	private long actionTimeRemaining;
 	
-	private final int[] buildTime = {100}; // à augmenter
-	private final int[] buildCost = {10};
+	private final long[] buildTime = {(long) (5*1.0E9D)}; // à augmenter
 	
 	private int buildType;
 	private String buildName;
 	
-	private final int GATHERTIME = 1000;
+	private final long GATHERTIME = (long) (1*1.0E9D);
 	
 	public Worker (int owner, String name, float posX, float posY, float rotation) {
 		super(owner, name, posX, posY, 1);
@@ -59,7 +58,7 @@ public class Worker extends Unit{
 				actionTimeRemaining -= dt;
 			}else {
 				actionTimeRemaining = 0;
-				Server.addMoney(1);
+				Server.addMoney(owner, 1);
 				gather();
 			}
 		}else {
@@ -76,7 +75,7 @@ public class Worker extends Unit{
 	public void build (String structure, String structName) {
 		if(structure.equals("factory")) {
 			buildType = FACTORY;
-			Server.removeMoney(Factory.getCost());
+			Server.removeMoney(owner, Factory.getCost());
 		}else {
 			//rien pour le moment
 		}
@@ -88,7 +87,7 @@ public class Worker extends Unit{
 	}
 	
 	public boolean canGather () {
-		return Map.getRessourceType( (int)(pos[0]/64 - 224/64), (int)(pos[1]/64)).equals("crystal");
+		return Map.getRessourceType( (int)(pos[0]/64), (int)(pos[1]/64)).equals("crystal");
 	}
 	
 	public void gather () {

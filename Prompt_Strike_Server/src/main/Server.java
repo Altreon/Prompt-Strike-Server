@@ -6,6 +6,7 @@ import java.util.Enumeration;
 import entity.Entity;
 import entity.Structure;
 import entity.Unit;
+import map.Map;
 import math.MATH;
 import network.Network;
 
@@ -19,9 +20,17 @@ public class Server {
 	private static ArrayList<String> commandWaitList;
 	private static ArrayList<Integer> commandWaitListInt;
 	
+	private static Map map;
+	
 	private static long lastTime;
+	
+	private static boolean exit;
 
-	public static void main(String[] args) {		
+	public static void main(String[] args) {	
+		exit = false;
+		
+		map = new Map();
+		
 		players = new ArrayList<Player>();
 		playersToRemove = new ArrayList<Integer>();
 		
@@ -33,8 +42,16 @@ public class Server {
 		
 		network.createServer();
 		
-		while(true) {
+		
+		while(!exit) {
+			//System.out.println("update");
 			update();
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -68,8 +85,10 @@ public class Server {
 					posX = 8;
 				}
 				
-				createWorker(i, "worker", posX*64, 2*64);
+				createWorker(i, "w", posX*64, 2*64);
 				createTank(i, "t", posX*64 + 64, 2*64 + 64);
+				createFactory(i, "fact", posX*64, 2*64 + 64);
+				addMoney(i, 100);
 			}
 		}
 	}
@@ -147,12 +166,14 @@ public class Server {
 		
 	}
 	
-	public static void addMoney(int amont) {
-		players.get(0).addMoney(amont);
+	public static void addMoney(int numPlayer, int amount) {
+		players.get(numPlayer).addMoney(amount);
+		network.sendUpdateMoney(numPlayer, players.get(numPlayer).getMoney());
 	}
 	
-	public static void removeMoney(int amont) {
-		players.get(0).removeMoney(amont);
+	public static void removeMoney(int numPlayer, int amount) {
+		players.get(numPlayer).removeMoney(amount);
+		network.sendUpdateMoney(numPlayer, players.get(numPlayer).getMoney());
 	}
 	
 	public static void applyFire(float posX, float posY, int radius, int amount, int playerExluded, String nameUnit) {
@@ -160,7 +181,6 @@ public class Server {
 		for (Unit unit : getAllUnits()) {
 			float[] posDamageUnit = {unit.getPos()[0] - posX, unit.getPos()[1] - posY};
 			if(unit.getOwner() != playerExluded && MATH.norme(posDamageUnit) <= radius) {
-				System.out.println("touch!");;
 				entityTouched.add(unit);
 			}
 			
@@ -169,7 +189,6 @@ public class Server {
 		for (Structure struct : getAllstructures()) {
 			float[] posDamageStruct = {struct.getPos()[0] - posX, struct.getPos()[1] - posY};
 			if(struct.getOwner() != playerExluded && MATH.norme(posDamageStruct) <= radius) {
-				System.out.println("touch!");
 				entityTouched.add(struct);
 			}
 			
@@ -179,7 +198,6 @@ public class Server {
 			entity.changeHP(-amount);
 			if(entity.getHP() <= 0) {
 				players.get(entity.getOwner()).destroyEntity(entity);
-				System.out.println(entity.getClass().getSuperclass().getSimpleName());
 				network.sendDestroyEntity(entity.getOwner(), entity.getClass().getSuperclass().getSimpleName(), entity.getName());
 			}
 		}

@@ -32,8 +32,6 @@ public class Player {
 		
 		structures = new Hashtable<String, Structure>();
 		structuresToRemove = new ArrayList<Structure>();
-		
-		money = 100;
 	}
 	
 	public void addMoney(int amont) {
@@ -86,6 +84,10 @@ public class Player {
 	
 	public boolean sufficientMoney(int cost) {
 		return money >= cost;
+	}
+	
+	public int getMoney() {
+		return money;
 	}
 	
 	public boolean unitCanBuild(String unitName, String structType, String structName) {
