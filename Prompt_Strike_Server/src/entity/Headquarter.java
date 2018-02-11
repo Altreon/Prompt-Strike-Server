@@ -2,20 +2,20 @@ package entity;
 
 import main.Server;
 
-public class Factory extends Structure{
+public class Headquarter extends Structure{
 	
 	private static final int COST = 50;
 	
-	private final int TANK = 0;
+	private final int WORKER = 0;
 	
-	private final long[] prodTime = {(long) (5*1.0E9D)};
+	private final long[] prodTime = {(long) (2*1.0E9D)};
 	
 	private boolean produce;
 	private long prodTimeRemaining;
 	private int prodType;
 	private String prodName;
 	
-	public Factory(int owner, String name, float posX, float posY) {
+	public Headquarter(int owner, String name, float posX, float posY) {
 		super(owner, name, posX, posY);
 	}
 	
@@ -29,8 +29,8 @@ public class Factory extends Structure{
 			if(prodTimeRemaining > 0) {
 				prodTimeRemaining -= dt;
 			}else {
-				if(prodType == TANK) {
-					Server.createTank(owner, prodName, pos[0], pos[1]);
+				if(prodType == WORKER) {
+					Server.createWorker(owner, prodName, pos[0], pos[1]);
 				}
 				produce = false;
 			}
@@ -43,8 +43,8 @@ public class Factory extends Structure{
 		if(produce) {
 			return false;
 		}else {
-			if(product.equals("tank")) {
-				return Server.getPlayers().get(owner).sufficientMoney(Tank.getCost());
+			if(product.equals("worker")) {
+				return Server.getPlayers().get(owner).sufficientMoney(Worker.getCost());
 			}else {
 				return false;
 			}
@@ -54,9 +54,9 @@ public class Factory extends Structure{
 	
 	@Override
 	public void produce (String product, String productName) {
-		if(product.equals("tank")) {
-			prodType = TANK;
-			Server.removeMoney(owner, Tank.getCost());
+		if(product.equals("worker")) {
+			prodType = WORKER;
+			Server.removeMoney(owner, Worker.getCost());
 		}
 		
 		prodName = productName;

@@ -4,12 +4,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import entity.Entity;
-import entity.Factory;
-import entity.Structure;
-import entity.Tank;
-import entity.Unit;
-import entity.Worker;
+import entity.*;
 
 public class Player {
 	
@@ -112,14 +107,13 @@ public class Player {
 	}
 
 	public boolean structCanProduce(String structName, String unitType, String unitName) {
-		return structures.get(structName).getClass().getSimpleName().equals("Factory")
-				&& !units.containsKey(unitName)
+		return !units.containsKey(unitName)
 				&& !structures.containsKey(unitName)
-				&& ((Factory) structures.get(structName)).canProduce(unitType); //à généralisé dans class Structure
+				&& structures.get(structName).canProduce(unitType); //à généralisé dans class Structure
 	}
 
 	public void structProduce(String structName, String unitType, String unitName) {
-		((Factory) structures.get(structName)).produce(unitType, unitName);
+		structures.get(structName).produce(unitType, unitName);
 		
 	}
 	
@@ -130,6 +124,10 @@ public class Player {
 	
 	public void addWorker(String name, float posX, float posY) {
 		units.put(name, new Worker(num, name, posX, posY, 0));
+	}
+	
+	public void addHeadquarter(String name, float posX, float posY) {
+		structures.put(name, new Headquarter(num, name, posX, posY));
 	}
 	
 	public void addFactory(String name, float posX, float posY) {

@@ -77,20 +77,31 @@ public class Server {
 		//network.sendCorrectCommand(players.size() - 1, "create worker worker " + posX*64 + " " + 2*64);
 		network.sendNewPlayer(players);
 		if(players.size() == 2) {
-			for(int i = 0; i < players.size(); i++) {
-				int posX = 0;
-				if(i == 0) {
-					posX = 1;
-				}else {
-					posX = 8;
-				}
-				
-				createWorker(i, "w", posX*64, 2*64);
-				createTank(i, "t", posX*64 + 64, 2*64 + 64);
-				createFactory(i, "fact", posX*64, 2*64 + 64);
-				addMoney(i, 100);
-			}
+			//iniTwoPlayer();
+			iniTwoPlayerTestEntity();
 		}
+	}
+	
+	private static void iniTwoPlayer() {
+		createHeadquarter(0, "head", 0, 0);
+		createHeadquarter(1, "head", (13-1)*64, (11-1)*64);
+		
+		addMoney(0, 100);
+		addMoney(1, 100);
+	}
+	
+	private static void iniTwoPlayerTestEntity() {
+		createHeadquarter(0, "head", 4*64, 2*64);
+		createFactory(0, "fact", 4*64, 3*64);
+		createWorker(0, "work", 4*64, 4*64);
+		createTank(0, "tank", 4*64, 5*64);
+		addMoney(0, 10000);
+		
+		createHeadquarter(1, "head", 7*64, 2*64);
+		createFactory(1, "fact", 7*64, 3*64);
+		createWorker(1, "work", 7*64, 4*64);
+		createTank(1, "tank", 7*64, 5*64);
+		addMoney(1, 10000);
 	}
 	
 	public static ArrayList<Unit> getAllUnits() {
@@ -214,6 +225,11 @@ public class Server {
 	public static void createWorker(int numPlayer, String name, float posX, float posY) {
 		players.get(numPlayer).addWorker(name, posX, posY);
 		network.sendNewEntity(numPlayer, "worker", name, posX, posY, 0);
+	}
+	
+	public static void createHeadquarter(int numPlayer, String name, float posX, float posY) {
+		players.get(numPlayer).addHeadquarter(name, posX, posY);
+		network.sendNewEntity(numPlayer, "headquarter", name, posX, posY, 0);
 	}
 
 	public static void createFactory(int numPlayer, String name, float posX, float posY) {

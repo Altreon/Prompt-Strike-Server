@@ -95,8 +95,15 @@ public abstract class Unit extends Entity{
 		newPos[0] = (float) (pos[0] + SPEEDMOVE*(dt/1.0E9D) * moveDirection * Math.cos(Math.toRadians(parts[MAINPART].rotation)));
 		newPos[1] = (float) (pos[1] + SPEEDMOVE*(dt/1.0E9D) * moveDirection * Math.sin(Math.toRadians(parts[MAINPART].rotation)));
 		moveDistance -= (float) (MATH.dist(pos, newPos));
-		pos[0] = newPos[0];
-		pos[1] = newPos[1];
+		
+		if(newPos[0] >= 0 && newPos[0] <= (13-1)*64) {
+			pos[0] = newPos[0];
+		}
+		if(newPos[1] >= 0 && newPos[1] <= (11-1)*64) {
+			pos[1] = newPos[1];
+		}
+		
+		
 		if(moveDistance <= 0) {
 			moveDistance = 0;
 		}
