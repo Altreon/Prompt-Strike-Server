@@ -14,7 +14,8 @@ public class Map {
 		}
 		
 		ressources = new Ressource[13][11];
-		ressources[4][0] = new Ressource("crystal");
+		ressources[0][0] = new Ressource("crystal");
+		ressources[10][8] = new Ressource("crystal");
 		
 	}
 	

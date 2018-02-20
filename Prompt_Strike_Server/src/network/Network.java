@@ -1,5 +1,6 @@
 package network;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -34,6 +35,21 @@ public class Network {
 		serverThread.start();
 		
 		UDPSender = new UDPClient(this);
+	}
+	
+	public void closeServer() {
+		if(!server.isClose()) {
+			try {
+				server.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		UDPSender.close();
+		while(!TCPClients.isEmpty()) {
+			TCPClients.get(0).stop();
+		}
 	}
 	
 	public void addClient (Socket socket) {
@@ -82,6 +98,19 @@ public class Network {
 		
 	}
 	
+	public void sendEndGame(int loserNumPlayer) {
+		EndGameMessage winMessage = new EndGameMessage(true);
+		EndGameMessage loseMessage = new EndGameMessage(false);
+		for(int i = 0; i < TCPClients.size(); i++) {
+			if(i == loserNumPlayer) {
+				TCPClients.get(i).sendMessage(loseMessage);
+			}else {
+				TCPClients.get(i).sendMessage(winMessage);
+			}
+		}
+		
+	}
+	
 	public void sendNewEntity(int numPlayer, String typeEntity, String nameEntity, float posX, float posY, float rotation) {
 		for(TCPClient client : TCPClients) {
 			CreateEntityMessage message = new CreateEntityMessage(numPlayer, typeEntity, nameEntity, posX, posY, rotation);
@@ -122,5 +151,14 @@ public class Network {
 	public void sendRot(int numPlayer, String unitName, float rotation, int idPart) {
 		RotMessage message = new RotMessage(numPlayer, unitName, rotation, idPart);
 		sendUPDMessage(message);
+	}
+
+	public void stopAcceptPlayer() {
+		try {
+			server.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

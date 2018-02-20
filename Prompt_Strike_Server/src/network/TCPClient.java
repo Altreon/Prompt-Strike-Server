@@ -20,6 +20,7 @@ public class TCPClient implements Runnable{
 	private ObjectOutputStream streamOut;
 	
 	private Network network;
+	private boolean connect;
 
 	public TCPClient(Socket socket, Network network) {
 		this.socket = socket;
@@ -28,7 +29,7 @@ public class TCPClient implements Runnable{
 
 	@Override
 	public void run() {
-		boolean connect = true;
+		connect = true;
 		
 		try {  
 		    start();
@@ -43,9 +44,10 @@ public class TCPClient implements Runnable{
 		    } catch(IOException ioe) {
 		    	System.out.println("Connexion error");
 		    	stop();
-		    	connect = false;
 		    }
 		}
+		
+		close();
 	}
 	
 	public void start() throws IOException{  
@@ -53,8 +55,9 @@ public class TCPClient implements Runnable{
 	    streamOut = new ObjectOutputStream(socket.getOutputStream());
 	}
 	
-    public void stop() {
-    	try {
+	public void stop () {
+		connect = false;
+		try {
     		streamIn.close();
 	    	streamOut.close();
 	        socket.close();
@@ -62,12 +65,23 @@ public class TCPClient implements Runnable{
     	catch(IOException ioe) {
     		System.out.println("Error closing ...");
     	}
+	}
+	
+    public void close() {
     	network.removeClient(this);
    }
 
 	public void sendMessage(Message message) {
 		try {
-	        while(streamOut == null) {};
+	        while(streamOut == null) {
+	        	//System.out.println("aie");
+	        	try {
+					Thread.sleep(10);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	        }
     		streamOut.writeObject(message);
 			streamOut.flush();
 		} catch (IOException e) {

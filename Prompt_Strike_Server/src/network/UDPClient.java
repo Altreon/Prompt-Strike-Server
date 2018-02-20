@@ -22,6 +22,9 @@ public class UDPClient implements Runnable{
 	private DatagramSocket socket;
 	
 	private Network network;
+
+	private boolean connect;
+	
 	public UDPClient(Network network) {
 		this.network = network;
 		
@@ -30,7 +33,7 @@ public class UDPClient implements Runnable{
 
 	@Override
 	public void run() {
-		boolean connect = true;
+		connect = true;
 		
 		while (connect) {  
 			try { 
@@ -45,8 +48,7 @@ public class UDPClient implements Runnable{
 		        
 		    } catch(IOException ioe) {
 		    	System.out.println("Connexion error");
-		    	stop();
-		    	connect = false;
+		    	close();
 		    }
 		}
 	}
@@ -60,7 +62,8 @@ public class UDPClient implements Runnable{
 		}
 	}
 	
-    public void stop() {
+    public void close() {
+    	connect = false;
     	socket.close();
    }
     

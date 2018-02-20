@@ -24,10 +24,10 @@ public class Server {
 	
 	private static long lastTime;
 	
-	private static boolean exit;
+	private static boolean isEnd;
 
 	public static void main(String[] args) {	
-		exit = false;
+		isEnd = false;
 		
 		map = new Map();
 		
@@ -40,11 +40,9 @@ public class Server {
 
 		network = new Network();
 		
-		network.createServer();
+		network.createServer();		
 		
-		
-		while(!exit) {
-			//System.out.println("update");
+		while(!isEnd) {
 			update();
 			try {
 				Thread.sleep(10);
@@ -53,6 +51,14 @@ public class Server {
 				e.printStackTrace();
 			}
 		}
+		
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		network.closeServer();
 	}
 	
 	public static void addCommandOnWaitList(int numPlayer, String commandText) {
@@ -77,8 +83,10 @@ public class Server {
 		//network.sendCorrectCommand(players.size() - 1, "create worker worker " + posX*64 + " " + 2*64);
 		network.sendNewPlayer(players);
 		if(players.size() == 2) {
-			//iniTwoPlayer();
-			iniTwoPlayerTestEntity();
+			network.stopAcceptPlayer();
+			iniTwoPlayer();
+			//iniTwoPlayerTestEntity();
+			System.out.println("The game begin!");
 		}
 	}
 	
@@ -160,7 +168,7 @@ public class Server {
 		}
 		
 		destroyEntities();
-		
+				
 		while(!commandWaitListInt.isEmpty()) {
 			processCommand(commandWaitListInt.remove(0), commandWaitList.remove(0));
 		}
@@ -188,6 +196,8 @@ public class Server {
 	}
 	
 	public static void applyFire(float posX, float posY, int radius, int amount, int playerExluded, String nameUnit) {
+		network.sendFire(playerExluded, nameUnit, posX, posY);
+		
 		ArrayList<Entity> entityTouched = new ArrayList<Entity>();
 		for (Unit unit : getAllUnits()) {
 			float[] posDamageUnit = {unit.getPos()[0] - posX, unit.getPos()[1] - posY};
@@ -210,11 +220,17 @@ public class Server {
 			if(entity.getHP() <= 0) {
 				players.get(entity.getOwner()).destroyEntity(entity);
 				network.sendDestroyEntity(entity.getOwner(), entity.getClass().getSuperclass().getSimpleName(), entity.getName());
+				if(entity.getClass().getSimpleName().equals("Headquarter")) {
+					endGame(entity.getOwner());
+				}
 			}
 		}
 		
-		network.sendFire(playerExluded, nameUnit, posX, posY);
-		
+	}
+	
+	public static void endGame(int loserNumPlayer) {
+		isEnd = true;
+		network.sendEndGame(loserNumPlayer);
 	}
 
 	public static void createTank(int numPlayer, String name, float posX, float posY) {

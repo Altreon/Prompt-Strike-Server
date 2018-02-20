@@ -12,6 +12,7 @@ public class Server implements Runnable {
 	
 	private ServerSocket server;
 	private Network network;
+	private boolean done;
 	
 	public Server (Network network) {
 		this.network = network;
@@ -24,7 +25,7 @@ public class Server implements Runnable {
 	        server = new ServerSocket(10);
 	        System.out.println("Server started: " + server);
 	        System.out.println("Waiting for players..."); 
-	        boolean done = false;
+	        done = false;
 	        while (!done) {  
 	        	try {
 	        		Socket socket = server.accept();
@@ -32,7 +33,7 @@ public class Server implements Runnable {
 	    	        network.addClient(socket);
 	        	}
 	        	catch(IOException ioe){
-	        		done = true;
+	        		close();
 	        	}
 	        }
 	        close();
@@ -43,9 +44,14 @@ public class Server implements Runnable {
 	}
 	
 	public void close() throws IOException {
+		done = true;
 		if (server != null) {
 			server.close();
 		}
+	}
+	
+	public boolean isClose() {
+		return done;
 	}
 	
 }
