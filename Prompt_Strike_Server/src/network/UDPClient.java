@@ -1,36 +1,33 @@
 package network;
 
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.net.Socket;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 
 import message.Message;
-import message.PosMessage;
 
 public class UDPClient implements Runnable{
 	
+	/** 
+	 * The UDP's socket
+	 * 
+	 * @see DatagramSocket
+	 */
 	private DatagramSocket socket;
 	
-	private Network network;
-
+	/** * If the UDP sender continue to work */
 	private boolean connect;
 	
-	public UDPClient(Network network) {
-		this.network = network;
-		
+	public UDPClient() {		
 		start();
 	}
 
+	/** * Starts the UDP sender */
 	@Override
 	public void run() {
 		connect = true;
@@ -38,7 +35,7 @@ public class UDPClient implements Runnable{
 		while (connect) {  
 			try { 
 				
-				byte[] buffer = new byte[256];
+				byte[] buffer = new byte[256]; // 256 more than enough (conventional) to store any message for this application
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 
                 socket.receive(packet);
@@ -53,43 +50,34 @@ public class UDPClient implements Runnable{
 		}
 	}
 	
+	/** * Opens the UDP's socket  */
 	public void start() {
 		try {
 			socket = new DatagramSocket();
-		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SocketException se) {
+			System.out.println("Error creating UDP-Sender");
+			se.printStackTrace();
 		}
 	}
 	
+	/** * Closes the UDP's socket  */
     public void close() {
     	connect = false;
     	socket.close();
    }
-    
-    /*public void sendCommand (int numPlayer, String command, boolean correct) {
-    	try {
-	    	String envoi = "servr message";
-	        byte[] buffer = envoi.getBytes();
-	    	InetAddress adresse = InetAddress.getByName("127.0.0.1");
-	        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, adresse, port);
-	        
-	        packet.setData(buffer);
-	        
-	        socket.send(packet);
-	        
-    	} catch (SocketException e) {
-            e.printStackTrace();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-
-     }*/
-
-	public void sendMessage(Message message, InetAddress adress, int port) {	
+    /**
+     * Sends a UDP message to a client
+     * 
+     * @param message
+     * 				The message to send
+     * @param address
+     * 				The IP address to send the message
+     * @param port
+     * 				The port to send the message
+     * @see Message
+     */ 
+	public void sendMessage(Message message, InetAddress address, int port) {	
 		try {
 			ByteArrayOutputStream bStream = new ByteArrayOutputStream();
 			ObjectOutput oo = new ObjectOutputStream(bStream);
@@ -97,9 +85,11 @@ public class UDPClient implements Runnable{
 			oo.close();
 			
 			byte[] buffer = bStream.toByteArray();
-	        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, adress, port);
+	        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, port);
 	        
 	        packet.setData(buffer);
+	        
+	        //here, a waiting for initialization is useless because it happen on server initialization, before add any client
 	        
 	        socket.send(packet);
 		} catch (IOException e) {

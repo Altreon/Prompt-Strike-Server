@@ -1,34 +1,42 @@
 package network;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import main.Command;
-
-public class Server implements Runnable {
+/** * This is the reception of connections for the server */
+public class Connexion implements Runnable {
 	
+	/** 
+	 * The  Server socket
+	 * 
+	 * @see ServerSocket
+	 */
 	private ServerSocket server;
+	
+	/** * The network manager */
 	private Network network;
+	
+	/** * If the server has done to accept player */
 	private boolean done;
 	
-	public Server (Network network) {
+	public Connexion (Network network) {
 		this.network = network;
 	}
 
+	/** * Start to accept player's connections*/
 	@Override
 	public void run() {
 		try {
 			System.out.println("server initializing...");
 	        server = new ServerSocket(10);
 	        System.out.println("Server started: " + server);
-	        System.out.println("Waiting for players..."); 
+	        System.out.println("Waiting for players...");
+	        
 	        done = false;
 	        while (!done) {  
 	        	try {
-	        		Socket socket = server.accept();
+	        		Socket socket = server.accept(); //wait a connexion
 	    	        System.out.println("Player found: " + socket);
 	    	        network.addClient(socket);
 	        	}
@@ -38,11 +46,12 @@ public class Server implements Runnable {
 	        }
 	        close();
 		}catch(IOException ioe) {
-			System.out.println(ioe); 
+			ioe.printStackTrace();
 		}
 		
 	}
 	
+	/** * Stop to accept player's connections*/
 	public void close() throws IOException {
 		done = true;
 		if (server != null) {
@@ -50,6 +59,7 @@ public class Server implements Runnable {
 		}
 	}
 	
+	/** * @return True if the server's connection is close*/
 	public boolean isClose() {
 		return done;
 	}

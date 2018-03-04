@@ -1,48 +1,57 @@
-package main;
+package Server;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
+
+import Command.Command;
 
 import entity.Entity;
 import entity.Structure;
 import entity.Unit;
 import map.Map;
 import math.MATH;
-import network.Network;
 
+import network.Network;
+import player.Player;
+
+/** * This is the main thread of the server's application */
 public class Server {
-	private static ArrayList<Player> players;
-	private static ArrayList<Integer> playersToRemove;
 	
+	/** * This is the main thread of the server's application */
+	private static ArrayList<Player> players;
+	private static ArrayList<Integer> playersToRemove; //Used to remove players on the server thread, and avoid some bugs
+	
+	/** * The network manager */
 	private static Network network;
 	
-	private static Command command;
+	/** * The list of command waiting to be apply */
 	private static ArrayList<String> commandWaitList;
-	private static ArrayList<Integer> commandWaitListInt;
-	
-	private static Map map;
-	
+	/** * The list of players's ID of commandWaitList*/
+	private static ArrayList<Integer> commandWaitListOwner;
+		
+	/** * The last time save on begin of game loop. Used to calculate the delta time */
 	private static long lastTime;
 	
+	/** * If the server will end */
 	private static boolean isEnd;
 
+	/** * Called at execution of application. Initialization of variables */
 	public static void main(String[] args) {	
 		isEnd = false;
 		
-		map = new Map();
-		
+		Map.initialization();
+				
 		players = new ArrayList<Player>();
 		playersToRemove = new ArrayList<Integer>();
 		
-		command = new Command();
 		commandWaitList = new ArrayList<String>();
-		commandWaitListInt = new ArrayList<Integer>();
+		commandWaitListOwner = new ArrayList<Integer>();
 
 		network = new Network();
 		
 		network.createServer();		
 		
-		while(!isEnd) {
+		while(!isEnd) { // Game loop
 			update();
 			try {
 				Thread.sleep(10);
@@ -53,43 +62,70 @@ public class Server {
 		}
 		
 		try {
+			System.out.println("The server will shutdown in 5 seconds...");
 			Thread.sleep(5000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		network.closeServer();
+		
+		//The application end with the main thread
 	}
 	
+	/**
+     * Adds a command on wait list to apply it on game thread.
+     * 
+     * @param numPlayer
+     * 				The ID of player who send the command
+     * @param commandText
+     * 				The command's string
+     */
 	public static void addCommandOnWaitList(int numPlayer, String commandText) {
 		commandWaitList.add(commandText);
-		commandWaitListInt.add(numPlayer);
+		commandWaitListOwner.add(numPlayer);
 	}
 	
-	
+	/**
+     * Threats the command
+     * 
+     * @param numPlayer
+     * 				The ID of player who send the command
+     * @param commandText
+     * 				The command's string
+     */
 	private static void processCommand(int numPlayer, String commandText) {
-		if(commandText.equals("newPlayer")) {
+		if(commandText.equals("newPlayer")) { //Pretty ugly method to add player on game loop, but simple.
 			newPlayer();
 		}else {
-			boolean commandCorrect = command.processCommand(numPlayer, commandText);
+			boolean commandCorrect = Command.processCommand(numPlayer, commandText);
 			network.sendCommand(numPlayer, commandText, commandCorrect);
 		}
 	}
 	
+	/** * Adds a new player on the game party */
 	private static void newPlayer() {
 		players.add(new Player(players.size()));
 		
-		//players.get(players.size() - 1).addWorker("worker", posX*64, 2*64);
-		//network.sendCorrectCommand(players.size() - 1, "create worker worker " + posX*64 + " " + 2*64);
 		network.sendNewPlayer(players);
 		if(players.size() == 2) {
-			network.stopAcceptPlayer();
-			iniTwoPlayer();
-			//iniTwoPlayerTestEntity();
-			System.out.println("The game begin!");
+			launchGame();
 		}
 	}
 	
+	/** * Stop to accept new player and launch the game */
+	private static void launchGame() {
+		network.stopAcceptPlayer();
+		
+		//for the test of the game, comment/uncomment the next lines
+		iniTwoPlayer();
+		//iniTwoPlayerTestEntity();
+		
+		System.out.println("The game begin!");
+	}
+	
+	/** * Players start the game with only one headquarter on corner of the map */
 	private static void iniTwoPlayer() {
 		createHeadquarter(0, "head", 0, 0);
 		createHeadquarter(1, "head", (13-1)*64, (11-1)*64);
@@ -98,6 +134,7 @@ public class Server {
 		addMoney(1, 100);
 	}
 	
+	/** * Players start the game with all entity on the map. It is for test */
 	private static void iniTwoPlayerTestEntity() {
 		createHeadquarter(0, "head", 4*64, 2*64);
 		createFactory(0, "fact", 4*64, 3*64);
@@ -138,6 +175,7 @@ public class Server {
 		return players;
 	}
 
+	/** * Updates the states of the game. It's the game loop */
 	public static void update() {
 		long currentTime = System.nanoTime();
 		long dt = System.nanoTime() - lastTime;
@@ -167,14 +205,15 @@ public class Server {
 			}
 		}
 		
-		destroyEntities();
+		destroy();
 				
-		while(!commandWaitListInt.isEmpty()) {
-			processCommand(commandWaitListInt.remove(0), commandWaitList.remove(0));
+		while(!commandWaitListOwner.isEmpty()) {
+			processCommand(commandWaitListOwner.remove(0), commandWaitList.remove(0));
 		}
 	}
 	
-	private static void destroyEntities () {
+	/** * Called at the end of update(), it remove disconnect players or dead entity from the game*/
+	private static void destroy () {
 		for(int numPlayer : playersToRemove) {
 			players.remove(numPlayer);
 			for(int i = numPlayer; i < players.size(); i++) {
@@ -185,20 +224,53 @@ public class Server {
 		
 	}
 	
+	/**
+     * Adds money to a player
+     * 
+     * @param numPlayer
+     * 				The ID of player who receive the money
+     * @param amount
+     * 				The amount of money to increase
+     */
 	public static void addMoney(int numPlayer, int amount) {
 		players.get(numPlayer).addMoney(amount);
 		network.sendUpdateMoney(numPlayer, players.get(numPlayer).getMoney());
 	}
 	
+	/**
+     * Removes money to a player
+     * 
+     * @param numPlayer
+     * 				The ID of player who lose the money
+     * @param amount
+     * 				The amount of money to decrease
+     */
 	public static void removeMoney(int numPlayer, int amount) {
 		players.get(numPlayer).removeMoney(amount);
 		network.sendUpdateMoney(numPlayer, players.get(numPlayer).getMoney());
 	}
 	
-	public static void applyFire(float posX, float posY, int radius, int amount, int playerExluded, String nameUnit) {
+	/**
+     * Applies the dammaged caused by fire impact (cannon shoot) to the entities on the radius of "explosion"
+     * 
+     * @param posX
+     * 				The X center's position of impact
+     * @param posY
+     * 				The Y center's position of impact
+     * @param radius
+     * 				The cercle's radius of hitbox impact
+     * @param amount
+     * 				The amount of damaged
+     * @param playerExluded
+     * 				The player ID who shoot, so their entity are safe from the damaged
+     * @param nameUnit
+     * 				The units shooter's name
+     */
+	public static void applyFireImpact(float posX, float posY, int radius, int amount, int playerExluded, String nameUnit) {
 		network.sendFire(playerExluded, nameUnit, posX, posY);
 		
 		ArrayList<Entity> entityTouched = new ArrayList<Entity>();
+		
 		for (Unit unit : getAllUnits()) {
 			float[] posDamageUnit = {unit.getPos()[0] - posX, unit.getPos()[1] - posY};
 			if(unit.getOwner() != playerExluded && MATH.norme(posDamageUnit) <= radius) {
@@ -220,6 +292,8 @@ public class Server {
 			if(entity.getHP() <= 0) {
 				players.get(entity.getOwner()).destroyEntity(entity);
 				network.sendDestroyEntity(entity.getOwner(), entity.getClass().getSuperclass().getSimpleName(), entity.getName());
+				
+				//if the headquarter of a player is destroy : end of the game
 				if(entity.getClass().getSimpleName().equals("Headquarter")) {
 					endGame(entity.getOwner());
 				}
@@ -228,34 +302,99 @@ public class Server {
 		
 	}
 	
-	public static void endGame(int loserNumPlayer) {
+	/** 
+	 * Finished the game and proclaim a winner
+	 * 
+	 * @param loserNumPlayer
+	 * 				The player ID who lose the game (so the winner is the other player)
+	 */
+	public static void endGame(int loserNumPlayer) { //There is more simple to get and send the loser of the game.
 		isEnd = true;
 		network.sendEndGame(loserNumPlayer);
 	}
-
+	
+	/** 
+	 * Create a new tank on the map
+	 * 
+	 * @param numPlayer
+	 * 				The player ID who create the tank
+	 * @param name
+	 * 				The tank's name
+	 * @param posX
+	 * 				The X position of the tank
+	 * @param posY
+	 * 				The Y position of the tank
+	 */
 	public static void createTank(int numPlayer, String name, float posX, float posY) {
 		players.get(numPlayer).addTank(name, posX, posY);
 		network.sendNewEntity(numPlayer, "tank", name, posX, posY, 0);
 	}
 	
+	/** 
+	 * Creates a new worker on the map
+	 * 
+	 * @param numPlayer
+	 * 				The player ID who create the workr
+	 * @param name
+	 * 				The worker's name
+	 * @param posX
+	 * 				The X position of the worker
+	 * @param posY
+	 * 				The Y position of the worker
+	 */
 	public static void createWorker(int numPlayer, String name, float posX, float posY) {
 		players.get(numPlayer).addWorker(name, posX, posY);
 		network.sendNewEntity(numPlayer, "worker", name, posX, posY, 0);
 	}
 	
+	/** 
+	 * Creates a new headquarter on the map
+	 * 
+	 * @param numPlayer
+	 * 				The player ID who create the headquarter
+	 * @param name
+	 * 				The headquarter's name
+	 * @param posX
+	 * 				The X position of the headquarter
+	 * @param posY
+	 * 				The Y position of the headquarter
+	 */
 	public static void createHeadquarter(int numPlayer, String name, float posX, float posY) {
 		players.get(numPlayer).addHeadquarter(name, posX, posY);
 		network.sendNewEntity(numPlayer, "headquarter", name, posX, posY, 0);
 	}
 
+	/** 
+	 * Creates a new factory on the map
+	 * 
+	 * @param numPlayer
+	 * 				The player ID who create the factory
+	 * @param name
+	 * 				The factory's name
+	 * @param posX
+	 * 				The X position of the factory
+	 * @param posY
+	 * 				The Y position of the factory
+	 */
 	public static void createFactory(int numPlayer, String name, float posX, float posY) {
 		players.get(numPlayer).addFactory(name, posX, posY);
 		network.sendNewEntity(numPlayer, "factory", name, posX, posY, 0);
 	}
 
-	public static void removePlayer(int nPlayer) {
-		System.out.println("The player " + nPlayer + " was disconnected");
+	/** 
+	 * Removes a disconnected players from the game
+	 * 
+	 * @param numPlayer
+	 * 				The player ID who disconnected
+	 */
+	public static void removePlayer(int numPlayer) {
+		System.out.println("The player " + numPlayer + " was disconnected");
 		
-		playersToRemove.add(nPlayer);	
+		if(players.size() < 2) { //if the game hadn't begin
+			playersToRemove.add(numPlayer);
+			
+		}else { //if the game had begin,
+			isEnd = true; // stop the game
+		}
 	}
 }

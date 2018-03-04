@@ -1,13 +1,28 @@
-package main;
+package Command;
 
 import java.util.ArrayList;
 
+import Server.Server;
+
+/** * This class is used to tread player's commands received by the server */
 public class Command {
 	
-	private static final int MAINPART = 0;
-	private static final int CANNONPART = 1;
+	/** * indicated witch part is the main of the unit */
+	private static final int MAIN_PART = 0;
+	/** * indicated witch part is the cannon of the offensive unit */
+	private static final int CANNON_PART = 1;
 
-	public boolean processCommand(int player, String commandText) {
+	
+	/**
+     * Take the command and apply its actions 
+     * 
+     * @param player
+     * 				The player ID who send the command
+     * @param commandText
+     * 				The string of the command
+     * @return If the command is correct
+     */
+	public static boolean processCommand(int player, String commandText) {
 		boolean commandCorrect = false;
 		
 		ArrayList<String> words = new ArrayList<String>();
@@ -26,6 +41,17 @@ public class Command {
 			
 	}
 
+	/**
+     * Checks witch function must be use to apply unit's action 
+     * 
+     * @param player
+     * 				The player ID who send the command
+     * @param unitName
+     * 				The name of the unit
+     * @param words
+     * 				The words that composes the command
+     * @return If the command is correct
+     */
 	private static boolean unitCommand(int player, String unitName, ArrayList<String> words) {
 		if (words.size() == 0) {
 			return false;
@@ -56,6 +82,17 @@ public class Command {
 		return false;
 	}
 
+	/**
+     * Checks witch movement the player have chosen
+     * 
+     * @param player
+     * 				The player ID who send the command
+     * @param unitName
+     * 				The name of the unit
+     * @param words
+     * 				The words that composes the command
+     * @return If the command is correct
+     */
 	private static boolean move(int player, String unitName, ArrayList<String> words) {
 		if (words.size() == 1) {
 			return moveDir(player, unitName, words);
@@ -66,6 +103,17 @@ public class Command {
 		}
 	}
 	
+	/**
+     * Simple Move a unit in their orientation direction, the value can be positive (moving forward) or negative (moving backward)
+     * 
+     * @param player
+     * 				The player ID who send the command
+     * @param unitName
+     * 				The name of the unit
+     * @param words
+     * 				The words that composes the command
+     * @return If the command is correct
+     */
 	private static boolean moveDir(int player, String unitName, ArrayList<String> words) {
 		int value = 0;
 		try {
@@ -82,6 +130,17 @@ public class Command {
 		return false;
 	}
 	
+	/**
+     * Move a unit at a relative position, relative at their current position
+     * 
+     * @param player
+     * 				The player ID who send the command
+     * @param unitName
+     * 				The name of the unit
+     * @param words
+     * 				The words that composes the command
+     * @return If the command is correct
+     */
 	private static boolean movePos(int player, String unitName, ArrayList<String> words) {
 		int posX = 0;
 		int posY = 0;
@@ -100,6 +159,17 @@ public class Command {
 		return false;
 	}
 	
+	/**
+     * Checks if the player want rotate the body of unit or their cannon
+     * 
+     * @param player
+     * 				The player ID who send the command
+     * @param unitName
+     * 				The name of the unit
+     * @param words
+     * 				The words that composes the command
+     * @return If the command is correct
+     */
 	private static boolean rotate(int player, String unitName, ArrayList<String> words) {
 		if (words.size() == 0) {
 			return false;
@@ -113,6 +183,19 @@ public class Command {
 		}
 	}
 	
+	/**
+     * Rotate a unit
+     * 
+     * @param player
+     * 				The player ID who send the command
+     * @param unitName
+     * 				The name of the unit
+     * @param sValue
+     * 				The value of rotation under string format
+     * @param words
+     * 				The words that composes the command
+     * @return If the command is correct
+     */
 	private static boolean rotateUnit(int player, String unitName, String sValue, ArrayList<String> words) {
 		if (words.size() != 0) {
 			return false;
@@ -126,13 +209,24 @@ public class Command {
 	    }
 		
 		if(value >= -360 && value <= 360) {
-			Server.getPlayers().get(player).rotateUnit(unitName, value, MAINPART);
+			Server.getPlayers().get(player).rotateUnit(unitName, value, MAIN_PART);
 			return true;
 		}
 		
 		return false;
 	}
 	
+	/**
+     * Rotate the Cannon of a offensive unit
+     * 
+     * @param player
+     * 				The player ID who send the command
+     * @param unitName
+     * 				The name of the unit
+     * @param words
+     * 				The words that composes the command
+     * @return If the command is correct
+     */
 	private static boolean rotateCannon(int player, String unitName, ArrayList<String> words) {
 		if (words.size() != 1 || !Server.getPlayers().get(player).unitCanRotateCannon(unitName)) {
 			return false;
@@ -146,13 +240,24 @@ public class Command {
 	    }
 		
 		if(value >= -360 && value <= 360) {
-			Server.getPlayers().get(player).rotateUnit(unitName, value, CANNONPART);
+			Server.getPlayers().get(player).rotateUnit(unitName, value, CANNON_PART);
 			return true;
 		}
 		
 		return false;
 	}
 	
+	/**
+     * Makes a offensive unit shoot
+     * 
+     * @param player
+     * 				The player ID who send the command
+     * @param unitName
+     * 				The name of the unit
+     * @param words
+     * 				The words that composes the command
+     * @return If the command is correct
+     */
 	private static boolean fire(int player, String unitName, ArrayList<String> words) {
 		if (words.size() != 1 || !Server.getPlayers().get(player).unitCanFire(unitName)) {
 			return false;
@@ -166,13 +271,24 @@ public class Command {
 	    }
 		
 		if(value >= 1 && value <= 5) {
-			Server.getPlayers().get(player).fireUnit(unitName, value, player);
+			Server.getPlayers().get(player).fireUnit(unitName, value);
 			return true;
 		}
 		
 		return false;
 	}
 	
+	/**
+     * Makes a support unit construct
+     * 
+     * @param player
+     * 				The player ID who send the command
+     * @param unitName
+     * 				The name of the unit
+     * @param words
+     * 				The words that composes the command
+     * @return If the command is correct
+     */
 	private static boolean build(int player, String unitName, ArrayList<String> words) {
 		if (words.size() != 2) {
 			return false;
@@ -189,6 +305,17 @@ public class Command {
 		return false;
 	}
 	
+	/**
+     * Makes a support unit gather
+     * 
+     * @param player
+     * 				The player ID who send the command
+     * @param unitName
+     * 				The name of the unit
+     * @param words
+     * 				The words that composes the command
+     * @return If the command is correct
+     */
 	private static boolean gather (int player, String unitName, ArrayList<String> words) {
 		if (words.size() != 0) {
 			return false;
@@ -202,6 +329,17 @@ public class Command {
 		return false;
 	}
 	
+	/**
+     * Checks witch function must be use to apply unit's action 
+     * 
+     * @param player
+     * 				The player ID who send the command
+     * @param structName
+     * 				The name of the structure
+     * @param words
+     * 				The words that composes the command
+     * @return If the command is correct
+     */
 	private static boolean structCommand(int player, String structName, ArrayList<String> words) {
 		if (words.size() == 0) {
 			return false;
@@ -216,6 +354,17 @@ public class Command {
 		return false;
 	}
 
+	/**
+     * Makes a structure produce a unit 
+     * 
+     * @param player
+     * 				The player ID who send the command
+     * @param structName
+     * 				The name of the structure
+     * @param words
+     * 				The words that composes the command
+     * @return If the command is correct
+     */
 	private static boolean produce(int player, String structName, ArrayList<String> words) {
 		if (words.size() != 2) {
 			return false;
