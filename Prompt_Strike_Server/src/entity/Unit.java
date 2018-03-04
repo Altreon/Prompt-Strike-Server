@@ -188,6 +188,6 @@ public abstract class Unit extends Entity{
 	 * @return true if the unit can move in ordered axis to a specific point 
 	 */
 	private boolean canMoveY(float[] atPos) {
-		return atPos[1] >= 1 && atPos[1] <= (Map.getMapSizeY()-1)*Map.getTileSize();
+		return atPos[1] >= 0 && atPos[1] <= (Map.getMapSizeY()-1)*Map.getTileSize();
 	}
 }
